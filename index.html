@@ -849,11 +849,36 @@ function exportHandler(){
   downloadJSON((S.libName||'library') + '.json', allRows);
 }
 
-function clearStoredData(){
-  if(!confirm('هل تريد حذف البيانات المحفوظه محليًا؟')) return;
-  localStorage.removeItem('library_data_v1'); allRows=[]; headers=[]; S.visibleCols=[]; S.titleCol='';
-  document.getElementById('fileStatus').innerHTML=''; renderCards(); alert('تم حذف البيانات المحفوظة');
-}
+
+  async function clearStoredData() {
+    if(!confirm("هل أنت متأكد من حذف جميع البيانات نهائياً من المتصفح والسحابة؟")) return;
+    
+    try {
+      // 1. Clear from Supabase
+      const { error } = await _supabase
+        .from("library_data")
+        .delete()
+        .eq("id", 1);
+      
+      if (error) throw error;
+      
+      // 2. Clear from LocalStorage
+      localStorage.removeItem("lib_allRows");
+      localStorage.removeItem("lib_headers");
+      localStorage.removeItem("lib_settings");
+      
+      // 3. Reset local variables
+      allRows = [];
+      headers = [];
+      
+      alert("تم حذف جميع البيانات بنجاح من السحابة والجهاز.");
+      location.reload();
+    } catch (e) {
+      console.error("Clear failed", e);
+      alert("فشل الحذف من السحابة: " + e.message);
+    }
+  }
+
 
 function debounce(fn, wait){ var t; return function(){ var args=arguments; clearTimeout(t); t=setTimeout(function(){ fn.apply(null,args); }, wait); }; }
 
