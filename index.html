@@ -810,9 +810,68 @@ function showDup(title){
 function closeDup(){ document.getElementById('dupModal').classList.remove('open'); }
 
 /* ═══ PERSISTENCE & HELPERS ═══ */
-function saveData(){
+
+async function syncToSupabase() {
+  if (!allRows.length) return;
+  try {
+    const { error } = await _supabase
+      .from("library_data")
+      .upsert({ 
+        id: 1, 
+        content: { rows: allRows, headers: headers, settings: S },
+        updated_at: new Date()
+      });
+    if (error) throw error;
+    console.log("Synced to Supabase");
+  } catch (e) {
+    console.error("Sync failed", e);
+  }
+}
+
+
+async function loadFromSupabase() {
+  try {
+    const { data, error } = await _supabase
+      .from("library_data")
+      .select("content")
+      .eq("id", 1)
+      .single();
+    
+    if (error && error.code !== "PGRST116") throw error;
+    
+    if (data && data.content) {
+      const obj = data.content;
+      // Only load if local is empty or older (simplified: always load if exists)
+      allRows = obj.rows || [];
+      headers = obj.headers || [];
+      if(obj.settings) S = Object.assign(S, obj.settings);
+      
+      if (allRows.length) {
+        document.getElementById("fileStatus").innerHTML = "<div class=\"file-ok\">☁️ تم تحميل " + allRows.length + " سجل من السحابة</div>";
+        buildColsUI();
+        document.getElementById("grpTitle").style.display="";
+        document.getElementById("grpCols").style.display="";
+        document.getElementById("hrCols").style.display="";
+        document.getElementById("libNameDisplay").textContent = S.libName || "مكتبتي";
+        applyTheme(S.theme||"galaxy");
+        renderCards();
+      }
+    }
+  } catch (e) {
+    console.error("Load from Supabase failed", e);
+  }
+}
+
+
+async function saveData(){
   try{
     var payload = { rows: allRows, headers: headers, settings: S };
+    localStorage.setItem("library_data_v1", JSON.stringify(payload));
+    // Sync to Supabase automatically
+    await syncToSupabase();
+  }catch(e){ console.warn("save failed", e); }
+}
+;
     localStorage.setItem('library_data_v1', JSON.stringify(payload));
   }catch(e){ console.warn('save failed', e); }
 }
