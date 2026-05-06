@@ -675,9 +675,16 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 
+
 function applyTheme(t){
-  document.body.setAttribute('data-theme',t);
+  S.theme = t;
+  document.body.className = "theme-" + t;
+  document.querySelectorAll(".theme-btn").forEach(function(b){
+    b.classList.toggle("active", b.getAttribute("onclick").indexOf(t) > -1);
+  });
+  saveData(); // Added this to ensure theme is saved
 }
+
 
 /* ═══ COLUMNS UI ═══ */
 function buildColsUI(){
@@ -811,10 +818,35 @@ function closeDup(){ document.getElementById('dupModal').classList.remove('open'
 
 /* ═══ PERSISTENCE & HELPERS ═══ */
 
+
 async function syncToSupabase() {
-  if (!allRows.length) return;
+  // Show a small loading indicator if possible, or just log
+  console.log("Attempting to sync to Supabase...");
   try {
     const { error } = await _supabase
+      .from("library_data")
+      .upsert({ 
+        id: 1, 
+        content: { rows: allRows, headers: headers, settings: S },
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) throw error;
+    
+    console.log("✅ Synced to Supabase successfully");
+    // Optional: Show a temporary toast or update status
+    const statusEl = document.getElementById("fileStatus");
+    if (statusEl) {
+        const originalHTML = statusEl.innerHTML;
+        statusEl.innerHTML = "<div class=\"file-ok\">✅ تم الحفظ في السحابة بنجاح</div>";
+        setTimeout(() => { statusEl.innerHTML = originalHTML; }, 2000);
+    }
+  } catch (e) {
+    console.error("❌ Sync failed", e);
+    alert("فشل الحفظ السحابي: " + e.message);
+  }
+}
+ = await _supabase
       .from("library_data")
       .upsert({ 
         id: 1, 
@@ -863,9 +895,19 @@ async function loadFromSupabase() {
 }
 
 
+async 
 async function saveData(){
   try{
     var payload = { rows: allRows, headers: headers, settings: S };
+    localStorage.setItem("library_data_v1", JSON.stringify(payload));
+    console.log("Local save success");
+    // Sync to Supabase immediately
+    await syncToSupabase();
+  }catch(e){ 
+    console.warn("save failed", e); 
+  }
+}
+;
     localStorage.setItem("library_data_v1", JSON.stringify(payload));
     // Sync to Supabase automatically
     await syncToSupabase();
