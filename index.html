@@ -611,11 +611,19 @@ function openPw(){
   document.getElementById('pwModal').classList.add('open');
   setTimeout(function(){ document.getElementById('pwInput').focus(); },150);
 }
+
 function checkPw(){
-  if(document.getElementById('pwInput').value==='123456'){
-    document.getElementById('pwModal').classList.remove('open');
+  var v = document.getElementById("pwInput").value;
+  if(v === "123456"){
     openStg();
   } else {
+    var inp = document.getElementById("pwInput");
+    inp.classList.add("shake");
+    document.getElementById("pwErr").textContent = "كلمة المرور خاطئة";
+    setTimeout(function(){ inp.classList.remove("shake"); }, 400);
+  }
+}
+ else {
     var inp=document.getElementById('pwInput');
     inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
     document.getElementById('pwErr').textContent='❌ كلمة المرور غير صحيحة';
@@ -715,14 +723,30 @@ function buildColsUI(){
 }
 
 /* ═══ SETTINGS OPEN / CLOSE ═══ */
+
 function openStg(){
-  document.getElementById('libNameIn').value=S.libName;
-  document.getElementById('cppRange').value=S.cardsPerPage;
-  document.getElementById('cppVal').textContent=S.cardsPerPage;
-  /* sync theme swatches */
-  document.querySelectorAll('.theme-swatch').forEach(function(s){
-    s.classList.toggle('active',s.dataset.theme===S.theme);
-  });
+  document.getElementById("pwModal").classList.remove("open");
+  var sel = document.getElementById("titleColSel");
+  if(sel){
+    sel.innerHTML = "";
+    headers.forEach(function(h, i){
+      var opt = document.createElement("option"); opt.value = i; opt.textContent = h;
+      if(i === S.titleCol) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    document.getElementById("libNameIn").value = S.libName || "";
+    document.getElementById("cppRange").value = S.cardsPerPage || 20;
+    document.getElementById("cppVal").textContent = S.cardsPerPage || 20;
+    document.getElementById("gridColsRange").value = S.gridCols || 3;
+    document.getElementById("gridColsVal").textContent = S.gridCols || 3;
+    buildColsUI();
+    document.getElementById("grpTitle").style.display="";
+    document.getElementById("grpCols").style.display="";
+    document.getElementById("hrCols").style.display="";
+  }
+  document.getElementById("stgModal").classList.add("open");
+}
+);
   /* sync cols picker */
   document.querySelectorAll('.col-opt').forEach(function(o){
     o.classList.toggle('on',parseInt(o.dataset.n)===S.gridCols);
