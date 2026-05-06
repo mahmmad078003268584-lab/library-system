@@ -415,437 +415,100 @@ input[type=range] { flex:1; accent-color:var(--accent); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body data-theme="galaxy">
-
-<!-- HEADER -->
-<header>
-  <div class="header-inner">
-    <div class="lib-name">
-      <span class="lib-icon" aria-hidden="true">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 5v14a1 1 0 0 0 1 1h15V5H4a1 1 0 0 0-1 0zM6 4h13a1 1 0 0 1 1 1v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-      <span id="libNameDisplay">مكتبتي</span>
-    </div>
-    <div class="search-bar" role="search" aria-label="بحث في المكتبة">
-      <span class="search-icon" aria-hidden="true">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </span>
-      
-      <button id="micBtn" class="mic-btn" aria-label="بحث صوتي" title="بحث صوتي">
-        <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-<input type="text" id="searchInput" placeholder="ابحث عن كتاب، مؤلف، رقم..." aria-label="حقل البحث" aria-controls="cardsGrid"/>
-      <button id="clearSearchBtn" class="clear-btn" aria-label="مسح البحث" title="مسح البحث">✖</button>
-    </div>
-    <div class="header-controls" aria-hidden="false">
-      <button id="exportBtn" class="export-btn" aria-label="تصدير JSON">تصدير</button>
-    </div>
-  </div>
-</header>
-
-<!-- MAIN -->
-<main>
-  <div class="top-bar">
-    <div class="results-info" id="resultsInfo">لا توجد بيانات مستوردة بعد</div>
-  </div>
-  <div class="cards-grid" id="cardsGrid" style="--cols:3">
-    <div class="empty-state">
-      <div class="big-icon" aria-hidden="true">
-        <svg width="72" height="72" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 5a1 1 0 0 1 1-1h3a2 2 0 0 1 2 2v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5zM8 5h9a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <h2>لا توجد كتب حتى الآن</h2>
-      <p>افتح الإعدادات واستورد ملف Excel</p>
-    </div>
-  </div>
-</main>
-
-<!-- FOOTER -->
-<footer>
-  <button class="settings-btn" onclick="openPw()">⚙️ الإعدادات</button>
-</footer>
-
-<!-- ══ PASSWORD MODAL ══ -->
-<div class="modal-overlay" id="pwModal">
-  <div class="modal pw-modal">
-    <div class="pw-icon" aria-hidden="true">
-      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    </div>
-    <div class="pw-title">الإعدادات محمية</div>
-    <div class="pw-sub">أدخل كلمة المرور للمتابعة</div>
-    <input type="password" class="pw-input" id="pwInput" placeholder="• • • • • •"
-      onkeydown="if(event.key==='Enter')checkPw()"/>
-    <div class="pw-err" id="pwErr"></div>
-    <button class="pw-btn" onclick="checkPw()">دخول ←</button>
-  </div>
-</div>
-
-<!-- ══ SETTINGS MODAL ══ -->
-<div class="modal-overlay" id="stgModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeStg()">✕</button>
-    <div class="modal-title">⚙️ الإعدادات</div>
-
-    <!-- Library name -->
-    <div class="stg-group">
-      <div class="stg-label"><span class="ico">📛</span> اسم المكتبة</div>
-      <input type="text" class="stg-input" id="libNameIn" placeholder="اسم مكتبتك" value="مكتبتي"/>
-    </div>
-
-    <hr class="divider"/>
-
-    <!-- Theme -->
-    <div class="stg-group">
-      <div class="stg-label"><span class="ico">🎨</span> المظهر والألوان</div>
-      <div class="theme-grid" id="themeGrid">
-        <div class="theme-swatch active" data-theme="galaxy"    style="background:linear-gradient(135deg,#0a0f1e,#1a0a2e);color:#a78bfa;border-color:#a78bfa"><span>🌌</span>غالاكسي</div>
-        <div class="theme-swatch"        data-theme="parchment" style="background:linear-gradient(135deg,#f5efe0,#d4a96a);color:#7c3516;border-color:#b5651d"><span>📜</span>رمال</div>
-        <div class="theme-swatch"        data-theme="forest"    style="background:linear-gradient(135deg,#0b1a10,#166534);color:#4ade80;border-color:#4ade80"><span>🌿</span>غابة</div>
-        <div class="theme-swatch"        data-theme="ocean"     style="background:linear-gradient(135deg,#020b18,#023e5a);color:#38bdf8;border-color:#38bdf8"><span>🌊</span>محيط</div>
-        <div class="theme-swatch"        data-theme="rose"      style="background:linear-gradient(135deg,#fff1f2,#fbcfe8);color:#be185d;border-color:#be185d"><span>🌸</span>وردي</div>
-      </div>
-    </div>
-
-    <hr class="divider"/>
-
-    <!-- Excel upload -->
-    <div class="stg-group">
-      <div class="stg-label"><span class="ico">📊</span> استيراد ملف Excel / CSV</div>
-      <label class="upload-lbl">
-        <input type="file" id="fileIn" accept=".xlsx,.xls,.csv"/>
-        <span class="upload-ico" aria-hidden="true">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7h5l2 3h8a1 1 0 0 1 1 1v6H3V7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-        <div class="upload-txt">
-          <strong>انقر هنا لاختيار الملف</strong>
-          xlsx · xls · csv
-        </div>
-      </label>
-      <div id="fileStatus"></div>
-      <div style="margin-top:.6rem;display:flex;gap:.6rem;align-items:center;">
-        <button id="clearDataBtn" class="save-btn" style="width:auto;background:transparent;color:var(--accent);box-shadow:none;border:1px solid var(--border);padding:.45rem .7rem">حذف البيانات المحفوظة</button>
-      </div>
-    </div>
-
-    <hr class="divider"/>
-
-    <!-- Title column -->
-    <div class="stg-group" id="grpTitle" style="display:none">
-      <div class="stg-label"><span class="ico">📌</span> عمود العنوان (للتجميع)</div>
-      <select class="stg-input" id="titleColSel"></select>
-    </div>
-
-    <!-- Visible columns -->
-    <div class="stg-group" id="grpCols" style="display:none">
-      <div class="stg-label"><span class="ico">🏷️</span> الحقول المعروضة في البطاقة</div>
-      <div class="chips" id="colChips"></div>
-    </div>
-
-    <hr class="divider" id="hrCols" style="display:none"/>
-
-    <!-- Cards per page -->
-    <div class="stg-group">
-      <div class="stg-label"><span class="ico">🃏</span> عدد البطاقات في الصفحة</div>
-      <div class="range-row">
-        <input type="range" id="cppRange" min="4" max="200" value="20" step="4"
-          oninput="document.getElementById('cppVal').textContent=this.value"/>
-        <div class="range-val" id="cppVal">20</div>
-      </div>
-    </div>
-
-    <!-- Cards columns -->
-    <div class="stg-group">
-      <div class="stg-label"><span class="ico">⬛</span> عدد الأعمدة في الصفحة (البطاقات بالصف)</div>
-      <div class="cols-picker" id="colsPicker">
-        <div class="col-opt" data-n="1">1</div>
-        <div class="col-opt" data-n="2">2</div>
-        <div class="col-opt on" data-n="3">3</div>
-        <div class="col-opt" data-n="4">4</div>
-        <div class="col-opt" data-n="5">5</div>
-        <div class="col-opt" data-n="6">6</div>
-      </div>
-    </div>
-
-    <button class="save-btn" onclick="applyStg()">💾 حفظ وتطبيق</button>
-  </div>
-</div>
-
-<!-- ══ DUPLICATES MODAL ══ -->
-<div class="modal-overlay" id="dupModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeDup()">✕</button>
-    <div class="modal-title" id="dupTitle">📚 نسخ مكررة</div>
-    <div class="dup-list" id="dupList"></div>
-  </div>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-/* ═══ STATE ═══ */
-var allRows=[], headers=[];
-var S = {
-  libName:'مكتبتي', visibleCols:[], titleCol:'',
-  cardsPerPage:20, gridCols:3, theme:'galaxy'
+const SUPABASE_URL = "";
+const SUPABASE_ANON_KEY = "";
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let allRows = [];
+let headers = [];
+let S = {
+  libName: "مكتبتي",
+  theme: "galaxy",
+  cardsPerPage: 20,
+  gridCols: 3,
+  titleCol: 0,
+  visibleCols: []
 };
 
-/* ═══ DYNAMIC XLSX LOADER ═══ */
-var _xlsxPromise = null;
-function ensureXLSX(){
-  if(window.XLSX) return Promise.resolve();
-  if(_xlsxPromise) return _xlsxPromise;
-  _xlsxPromise = new Promise(function(resolve,reject){
-    var s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.async = true; s.defer = false;
-    s.onload = function(){ resolve(window.XLSX); };
-    s.onerror = function(){ reject(new Error('فشل تحميل مكتبة XLSX')); };
-    document.head.appendChild(s);
-  });
-  return _xlsxPromise;
-}
-
-/* ═══ PASSWORD ═══ */
-function openPw(){
-  document.getElementById('pwInput').value='';
-  document.getElementById('pwErr').textContent='';
-  document.getElementById('pwInput').classList.remove('shake');
-  document.getElementById('pwModal').classList.add('open');
-  setTimeout(function(){ document.getElementById('pwInput').focus(); },150);
-}
-
-function checkPw(){
-  var v = document.getElementById("pwInput").value;
-  if(v === "123456"){
-    openStg();
-  } else {
-    var inp = document.getElementById("pwInput");
-    inp.classList.add("shake");
-    document.getElementById("pwErr").textContent = "كلمة المرور خاطئة";
-    setTimeout(function(){ inp.classList.remove("shake"); }, 400);
-  }
-}
- else {
-    var inp=document.getElementById('pwInput');
-    inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
-    document.getElementById('pwErr').textContent='❌ كلمة المرور غير صحيحة';
-    inp.value='';
-  }
-}
-
-/* ═══ FILE UPLOAD ═══ */
-document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('fileIn').addEventListener('change',function(e){
-    var file=e.target.files[0]; if(!file) return;
-    var statusEl = document.getElementById('fileStatus');
-    statusEl.innerHTML = '<div class="file-loading">⏳ تحميل أداة الاستيراد...</div>';
-    ensureXLSX().then(function(){
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        try{
-          var data=new Uint8Array(ev.target.result);
-          var wb=XLSX.read(data,{type:'array'});
-          var ws=wb.Sheets[wb.SheetNames[0]];
-          var json=XLSX.utils.sheet_to_json(ws,{defval:''});
-          if(!json.length){alert('الملف فارغ!'); statusEl.innerHTML=''; return;}
-          allRows=json; headers=Object.keys(json[0]);
-          S.visibleCols=[].concat(headers); S.titleCol=headers[0];
-          statusEl.innerHTML = '<div class="file-ok">✅ '+json.length+' صف · '+headers.length+' عمود · "'+file.name+'"</div>';
-          buildColsUI();
-          document.getElementById('grpTitle').style.display='';
-          document.getElementById('grpCols').style.display='';
-          document.getElementById('hrCols').style.display='';
-          try{ saveData(); saveToSupabase(); }catch(e){console.warn('could not save data',e)}
-        }catch(err){alert('خطأ: '+err.message); statusEl.innerHTML='';}
-      };
-      reader.onerror=function(){alert('فشل قراءة الملف'); statusEl.innerHTML='';};
-      reader.readAsArrayBuffer(file);
-    }).catch(function(err){
-      alert('خطأ تحميل مكتبة التحليل: '+err.message);
-      document.getElementById('fileStatus').innerHTML='';
-    });
-  });
-
-  /* THEME SWATCHES click */
-  document.getElementById('themeGrid').addEventListener('click',function(e){
-    var sw=e.target.closest('.theme-swatch'); if(!sw) return;
-    document.querySelectorAll('.theme-swatch').forEach(function(s){s.classList.remove('active');});
-    sw.classList.add('active');
-    S.theme=sw.dataset.theme;
-    applyTheme(S.theme);
-  });
-
-  /* COLUMNS PICKER click */
-  document.getElementById('colsPicker').addEventListener('click',function(e){
-    var opt=e.target.closest('.col-opt'); if(!opt) return;
-    document.querySelectorAll('.col-opt').forEach(function(o){o.classList.remove('on');});
-    opt.classList.add('on');
-    S.gridCols=parseInt(opt.dataset.n);
-    document.getElementById('cardsGrid').style.setProperty('--cols',S.gridCols);
-  });
-});
-
-
-function applyTheme(t){
+function applyTheme(t) {
   S.theme = t;
   document.body.className = "theme-" + t;
-  document.querySelectorAll(".theme-btn").forEach(function(b){
-    b.classList.toggle("active", b.getAttribute("onclick").indexOf(t) > -1);
+  document.querySelectorAll(".theme-btn").forEach(b => {
+    const onclick = b.getAttribute("onclick") || "";
+    b.classList.toggle("active", onclick.includes(t));
   });
-  saveData(); // Added this to ensure theme is saved
+  saveData();
 }
 
-
-/* ═══ COLUMNS UI ═══ */
-function buildColsUI(){
-  var sel=document.getElementById('titleColSel');
-  sel.innerHTML=headers.map(function(h){return '<option value="'+h+'">'+h+'</option>';}).join('');
-  sel.value=S.titleCol;
-  sel.onchange=function(){S.titleCol=this.value;};
-
-  var wrap=document.getElementById('colChips');
-  wrap.innerHTML='';
-  headers.forEach(function(h){
-    var on=S.visibleCols.indexOf(h)>=0;
-    var c=document.createElement('div');
-    c.className='chip'+(on?' on':'');
-    c.textContent=(on?'✓ ':'')+h;
-    c.onclick=function(){
-      if(S.visibleCols.indexOf(h)>=0){
-        if(S.visibleCols.length===1) return;
-        S.visibleCols=S.visibleCols.filter(function(x){return x!==h;});
-        c.classList.remove('on'); c.textContent=h;
-      } else {
-        S.visibleCols.push(h);
-        c.classList.add('on'); c.textContent='✓ '+h;
-      }
-    };
-    wrap.appendChild(c);
-  });
+function openPw() {
+  document.getElementById("pwInput").value = "";
+  document.getElementById("pwErr").textContent = "";
+  document.getElementById("pwModal").classList.add("open");
+  setTimeout(() => document.getElementById("pwInput").focus(), 150);
 }
 
-/* ═══ SETTINGS OPEN / CLOSE ═══ */
+function closePw() { document.getElementById("pwModal").classList.remove("open"); }
 
-function openStg(){
-  document.getElementById("pwModal").classList.remove("open");
-  var sel = document.getElementById("titleColSel");
-  if(sel){
+function checkPw() {
+  if (document.getElementById("pwInput").value === "123456") {
+    closePw();
+    openStg();
+  } else {
+    document.getElementById("pwErr").textContent = "كلمة المرور خاطئة";
+    document.getElementById("pwInput").classList.add("shake");
+    setTimeout(() => document.getElementById("pwInput").classList.remove("shake"), 400);
+  }
+}
+
+function openStg() {
+  const sel = document.getElementById("titleColSel");
+  if (sel) {
     sel.innerHTML = "";
-    headers.forEach(function(h, i){
-      var opt = document.createElement("option"); opt.value = i; opt.textContent = h;
-      if(i === S.titleCol) opt.selected = true;
+    headers.forEach((h, i) => {
+      const opt = document.createElement("option");
+      opt.value = i; opt.textContent = h;
+      if (i === S.titleCol) opt.selected = true;
       sel.appendChild(opt);
     });
-    document.getElementById("libNameIn").value = S.libName || "";
-    document.getElementById("cppRange").value = S.cardsPerPage || 20;
-    document.getElementById("cppVal").textContent = S.cardsPerPage || 20;
-    document.getElementById("gridColsRange").value = S.gridCols || 3;
-    document.getElementById("gridColsVal").textContent = S.gridCols || 3;
-    buildColsUI();
-    document.getElementById("grpTitle").style.display="";
-    document.getElementById("grpCols").style.display="";
-    document.getElementById("hrCols").style.display="";
   }
+  document.getElementById("libNameIn").value = S.libName;
+  document.getElementById("cppRange").value = S.cardsPerPage;
+  document.getElementById("cppVal").textContent = S.cardsPerPage;
+  document.getElementById("gridColsRange").value = S.gridCols;
+  document.getElementById("gridColsVal").textContent = S.gridCols;
+  
+  buildColsUI();
   document.getElementById("stgModal").classList.add("open");
 }
-);
-  /* sync cols picker */
-  document.querySelectorAll('.col-opt').forEach(function(o){
-    o.classList.toggle('on',parseInt(o.dataset.n)===S.gridCols);
-  });
-  if(headers.length){
-    buildColsUI();
-    document.getElementById('grpTitle').style.display='';
-    document.getElementById('grpCols').style.display='';
-    document.getElementById('hrCols').style.display='';
-  }
-  document.getElementById('stgModal').classList.add('open');
-}
-function closeStg(){ document.getElementById('stgModal').classList.remove('open'); }
 
-function applyStg(){
-  S.libName=document.getElementById('libNameIn').value.trim()||'مكتبتي';
-  S.cardsPerPage=parseInt(document.getElementById('cppRange').value)||20;
-  var sel=document.getElementById('titleColSel');
-  if(sel.value) S.titleCol=sel.value;
-  /* cols from picker already applied live */
-  document.getElementById('libNameDisplay').textContent=S.libName;
-  applyTheme(S.theme);
-  document.getElementById('cardsGrid').style.setProperty('--cols',S.gridCols);
+function closeStg() { document.getElementById("stgModal").classList.remove("open"); }
+
+function applyStg() {
+  S.libName = document.getElementById("libNameIn").value.trim() || "مكتبتي";
+  S.cardsPerPage = parseInt(document.getElementById("cppRange").value);
+  S.gridCols = parseInt(document.getElementById("gridColsRange").value);
+  const sel = document.getElementById("titleColSel");
+  if (sel) S.titleCol = parseInt(sel.value);
+  
+  const checks = document.querySelectorAll(".col-check:checked");
+  S.visibleCols = Array.from(checks).map(c => parseInt(c.value));
+  
+  document.getElementById("libNameDisplay").textContent = S.libName;
+  document.getElementById("cardsGrid").style.setProperty("--cols", S.gridCols);
+  
+  saveData();
+  renderCards();
   closeStg();
-  try{ saveData(); saveToSupabase(); }catch(e){}
-  renderCards(document.getElementById('searchInput').value);
 }
 
-/* ═══ RENDER ═══ */
-function renderCards(q){
-  q=q||'';
-  var grid=document.getElementById('cardsGrid');
-  if(!allRows.length){
-    grid.innerHTML='<div class="empty-state"><div class="big-icon">📖</div><h2>لا توجد كتب</h2><p>استورد ملف Excel من الإعدادات</p></div>';
-    document.getElementById('resultsInfo').textContent='لا توجد بيانات';
-    return;
-  }
-  var ql=q.trim().toLowerCase();
-  var filtered=allRows.filter(function(r){
-    return !ql||Object.values(r).some(function(v){return String(v).toLowerCase().indexOf(ql)>=0;});
-  });
-  var tc=S.titleCol||headers[0];
-  var groups={};
-  filtered.forEach(function(r){
-    var k=String(r[tc]!==undefined?r[tc]:'').trim()||'(بدون عنوان)';
-    if(!groups[k]) groups[k]=[];
-    groups[k].push(r);
-  });
-  var keys=Object.keys(groups);
-  var shown=keys.slice(0,S.cardsPerPage);
-  document.getElementById('resultsInfo').innerHTML=
-    'عرض <span>'+shown.length+'</span> من <span>'+keys.length+'</span> عنوان · سجلات: <span>'+allRows.length+'</span>';
-
-  var SC=['s0','s1','s2','s3','s4'];
-  var dcols=S.visibleCols.length?S.visibleCols:headers;
-
-  grid.innerHTML=shown.map(function(title,i){
-    var rows=groups[title], main=rows[0], dups=rows.slice(1);
-    var sc=SC[i%SC.length];
-    var fields=dcols.filter(function(c){return c!==tc;}).map(function(c){
-      var v=(main[c]!==undefined&&main[c]!=='')?main[c]:'—';
-      return '<div class="book-field"><span class="book-field-label">'+c+':</span><span class="book-field-val">'+v+'</span></div>';
-    }).join('');
-    var safe=title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    var dupBtn=dups.length
-      ?'<div class="dup-btn" onclick="showDup(\''+safe+'\')">📋 نسخ أخرى <span class="dup-badge">'+dups.length+'</span></div>'
-      :'';
-    return '<div class="book-card"><div class="card-stripe '+sc+'"></div><div class="book-title">'+title+'</div>'+fields+dupBtn+'</div>';
-  }).join('');
-
-  if(!shown.length){
-    grid.innerHTML='<div class="empty-state"><div class="big-icon">🔎</div><h2>لا نتائج</h2><p>جرب كلمة بحث أخرى</p></div>';
-  }
+async function saveData() {
+  localStorage.setItem("library_data_v1", JSON.stringify({ rows: allRows, headers: headers, settings: S }));
+  await syncToSupabase();
 }
-
-/* ═══ DUPLICATES ═══ */
-function showDup(title){
-  var tc=S.titleCol||headers[0];
-  var rows=allRows.filter(function(r){return String(r[tc]!==undefined?r[tc]:'').trim()===title;});
-  var dups=rows.slice(1);
-  document.getElementById('dupTitle').textContent='📚 نسخ أخرى لـ: '+title;
-  var dc=S.visibleCols.length?S.visibleCols:headers;
-  document.getElementById('dupList').innerHTML=dups.map(function(row,i){
-    var fields=dc.map(function(c){
-      var v=(row[c]!==undefined&&row[c]!=='')?row[c]:'—';
-      return '<div class="book-field"><span class="book-field-label">'+c+':</span><span>'+v+'</span></div>';
-    }).join('');
-    return '<div class="dup-item"><div class="dup-num">النسخة '+(i+2)+'</div>'+fields+'</div>';
-  }).join('');
-  document.getElementById('dupModal').classList.add('open');
-}
-function closeDup(){ document.getElementById('dupModal').classList.remove('open'); }
-
-/* ═══ PERSISTENCE & HELPERS ═══ */
-
 
 async function syncToSupabase() {
-  // Show a small loading indicator if possible, or just log
-  console.log("Attempting to sync to Supabase...");
   try {
     const { error } = await _supabase
       .from("library_data")
@@ -854,209 +517,138 @@ async function syncToSupabase() {
         content: { rows: allRows, headers: headers, settings: S },
         updated_at: new Date().toISOString()
       });
-    
     if (error) throw error;
-    
-    console.log("✅ Synced to Supabase successfully");
-    // Optional: Show a temporary toast or update status
-    const statusEl = document.getElementById("fileStatus");
-    if (statusEl) {
-        const originalHTML = statusEl.innerHTML;
-        statusEl.innerHTML = "<div class=\"file-ok\">✅ تم الحفظ في السحابة بنجاح</div>";
-        setTimeout(() => { statusEl.innerHTML = originalHTML; }, 2000);
-    }
-  } catch (e) {
-    console.error("❌ Sync failed", e);
-    alert("فشل الحفظ السحابي: " + e.message);
-  }
-}
- = await _supabase
-      .from("library_data")
-      .upsert({ 
-        id: 1, 
-        content: { rows: allRows, headers: headers, settings: S },
-        updated_at: new Date()
-      });
-    if (error) throw error;
-    console.log("Synced to Supabase");
+    showToast("✅ تم الحفظ سحابياً");
   } catch (e) {
     console.error("Sync failed", e);
   }
 }
 
-
-async function loadFromSupabase() {
-  try {
-    const { data, error } = await _supabase
-      .from("library_data")
-      .select("content")
-      .eq("id", 1)
-      .single();
-    
-    if (error && error.code !== "PGRST116") throw error;
-    
-    if (data && data.content) {
-      const obj = data.content;
-      // Only load if local is empty or older (simplified: always load if exists)
+async function loadData() {
+  const local = localStorage.getItem("library_data_v1");
+  if (local) {
+    try {
+      const obj = JSON.parse(local);
       allRows = obj.rows || [];
       headers = obj.headers || [];
-      if(obj.settings) S = Object.assign(S, obj.settings);
-      
-      if (allRows.length) {
-        document.getElementById("fileStatus").innerHTML = "<div class=\"file-ok\">☁️ تم تحميل " + allRows.length + " سجل من السحابة</div>";
-        buildColsUI();
-        document.getElementById("grpTitle").style.display="";
-        document.getElementById("grpCols").style.display="";
-        document.getElementById("hrCols").style.display="";
-        document.getElementById("libNameDisplay").textContent = S.libName || "مكتبتي";
-        applyTheme(S.theme||"galaxy");
-        renderCards();
-      }
-    }
-  } catch (e) {
-    console.error("Load from Supabase failed", e);
+      S = Object.assign(S, obj.settings || {});
+      renderCards();
+    } catch(e) { console.error("Local load failed", e); }
   }
-}
-
-
-async 
-async function saveData(){
-  try{
-    var payload = { rows: allRows, headers: headers, settings: S };
-    localStorage.setItem("library_data_v1", JSON.stringify(payload));
-    console.log("Local save success");
-    // Sync to Supabase immediately
-    await syncToSupabase();
-  }catch(e){ 
-    console.warn("save failed", e); 
-  }
-}
-;
-    localStorage.setItem("library_data_v1", JSON.stringify(payload));
-    // Sync to Supabase automatically
-    await syncToSupabase();
-  }catch(e){ console.warn("save failed", e); }
-}
-;
-    localStorage.setItem('library_data_v1', JSON.stringify(payload));
-  }catch(e){ console.warn('save failed', e); }
-}
-
-function loadSavedData(){
-  try{
-    var raw = localStorage.getItem('library_data_v1'); if(!raw) return;
-    var obj = JSON.parse(raw);
-    if(obj.rows && obj.headers){
-      allRows = obj.rows; headers = obj.headers;
-      if(obj.settings) S = Object.assign(S, obj.settings);
-      if(!S.visibleCols || !S.visibleCols.length) S.visibleCols = headers.slice(0, Math.min(6, headers.length));
-      document.getElementById('fileStatus').innerHTML = '<div class="file-ok">🔁 '+allRows.length+' صف · '+headers.length+' عمود · تم استرجاع البيانات</div>';
-      buildColsUI();
-      document.getElementById('grpTitle').style.display='';
-      document.getElementById('grpCols').style.display='';
-      document.getElementById('hrCols').style.display='';
-      document.getElementById('libNameDisplay').textContent = S.libName || document.getElementById('libNameDisplay').textContent;
-      applyTheme(S.theme||'galaxy');
-      document.getElementById('cardsGrid').style.setProperty('--cols', S.gridCols||3);
-    }
-  }catch(e){ console.warn('load failed', e); }
-}
-
-function downloadJSON(filename, data){
-  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
-}
-
-function exportHandler(){
-  if(!allRows.length){ alert('لا توجد بيانات للتصدير'); return; }
-  downloadJSON((S.libName||'library') + '.json', allRows);
-}
-
-
-  async function clearStoredData() {
-    if(!confirm("هل أنت متأكد من حذف جميع البيانات نهائياً من المتصفح والسحابة؟")) return;
-    
-    try {
-      // 1. Clear from Supabase
-      const { error } = await _supabase
-        .from("library_data")
-        .delete()
-        .eq("id", 1);
-      
-      if (error) throw error;
-      
-      // 2. Clear from LocalStorage
-      localStorage.removeItem("lib_allRows");
-      localStorage.removeItem("lib_headers");
-      localStorage.removeItem("lib_settings");
-      
-      // 3. Reset local variables
-      allRows = [];
-      headers = [];
-      
-      alert("تم حذف جميع البيانات بنجاح من السحابة والجهاز.");
-      location.reload();
-    } catch (e) {
-      console.error("Clear failed", e);
-      alert("فشل الحذف من السحابة: " + e.message);
-    }
-  }
-
-
-function debounce(fn, wait){ var t; return function(){ var args=arguments; clearTimeout(t); t=setTimeout(function(){ fn.apply(null,args); }, wait); }; }
-
-document.addEventListener('DOMContentLoaded', function(){
-  loadSavedData(); loadFromSupabase();
-  var si = document.getElementById('searchInput');
-  var cb = document.getElementById('clearSearchBtn');
-  var deb = debounce(function(q){ renderCards(q); }, 160);
   
-  // Voice Search
-  var micBtn = document.getElementById("micBtn");
-  if (micBtn) {
-    var recognition = null;
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = "ar-SA";
-      recognition.interimResults = false;
-      
-      recognition.onstart = function() { micBtn.classList.add("active"); };
-      recognition.onend = function() { micBtn.classList.add("active"); micBtn.classList.remove("active"); };
-      recognition.onresult = function(event) {
-        var transcript = event.results[0][0].transcript;
-        si.value = transcript;
-        if(cb) cb.style.display = "inline-block";
-        renderCards(transcript);
-      };
+  try {
+    const { data, error } = await _supabase.from("library_data").select("content").eq("id", 1).single();
+    if (data && data.content) {
+      const obj = data.content;
+      allRows = obj.rows || [];
+      headers = obj.headers || [];
+      S = Object.assign(S, obj.settings || {});
+      renderCards();
+      const statusEl = document.getElementById("fileStatus");
+      if (statusEl) statusEl.innerHTML = `<div class="file-ok">☁️ تم المزامنة: ${allRows.length} سجل</div>`;
     }
-    micBtn.addEventListener("click", function() {
-      if (!recognition) { alert("متصفحك لا يدعم البحث الصوتي"); return; }
-      try { recognition.start(); } catch(e) { recognition.stop(); }
+  } catch (e) { console.error("Load failed", e); }
+}
+
+function showToast(msg) {
+  const t = document.createElement("div");
+  t.style = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,255,0,0.8);color:#000;padding:10px 20px;border-radius:20px;z-index:9999;font-weight:bold;";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+async function handleFile(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, {type:"array"});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(ws, {header:1});
+    if(json.length > 0) {
+      headers = json[0];
+      allRows = json.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = row[i]);
+        return obj;
+      });
+      S.visibleCols = headers.slice(0, 6).map((_, i) => i);
+      saveData();
+      renderCards();
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderCards(query = "") {
+  const grid = document.getElementById("cardsGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  const filtered = allRows.filter(row => 
+    Object.values(row).some(v => String(v).toLowerCase().includes(query.toLowerCase()))
+  );
+  
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><h2>لا توجد نتائج</h2></div>';
+    return;
+  }
+  
+  filtered.forEach(row => {
+    const card = document.createElement("div");
+    card.className = "card";
+    let html = `<div class="card-title">${row[headers[S.titleCol]] || "بدون عنوان"}</div>`;
+    S.visibleCols.forEach(idx => {
+      if (idx !== S.titleCol) {
+        html += `<div class="card-item"><span class="label">${headers[idx]}:</span> ${row[headers[idx]] || "-"}</div>`;
+      }
     });
-  }
-if(si){
-    si.addEventListener('input', function(e){ var v = e.target.value; if(cb) cb.style.display = v ? 'inline-block' : 'none'; deb(v); });
-    if(cb) cb.addEventListener('click', function(){ si.value=''; cb.style.display='none'; renderCards(''); si.focus(); });
-  }
-  var ex = document.getElementById('exportBtn'); if(ex) ex.addEventListener('click', exportHandler);
-  var clearBtn = document.getElementById('clearDataBtn'); if(clearBtn) clearBtn.addEventListener('click', clearStoredData);
-});
-
-/* ═══ CLOSE ON OVERLAY ═══ */
-['pwModal','stgModal','dupModal'].forEach(function(id){
-  document.getElementById(id).addEventListener('click',function(e){
-    if(e.target===this){
-      if(id==='stgModal') closeStg();
-      else if(id==='dupModal') closeDup();
-      else this.classList.remove('open');
-    }
+    card.innerHTML = html;
+    grid.appendChild(card);
   });
-});
+}
 
-renderCards();
+function buildColsUI() {
+  const container = document.getElementById("colsList");
+  if (!container) return;
+  container.innerHTML = "";
+  headers.forEach((h, i) => {
+    const div = document.createElement("div");
+    div.className = "col-item";
+    div.innerHTML = `<label><input type="checkbox" class="col-check" value="${i}" ${S.visibleCols.includes(i) ? "checked" : ""}> ${h}</label>`;
+    container.appendChild(div);
+  });
+}
+
+async function clearStoredData() {
+  if(!confirm("هل أنت متأكد من حذف جميع البيانات نهائياً من المتصفح والسحابة؟")) return;
+  try {
+    await _supabase.from("library_data").delete().eq("id", 1);
+    localStorage.removeItem("library_data_v1");
+    location.reload();
+  } catch (e) { alert("فشل الحذف: " + e.message); }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+  const si = document.getElementById("searchInput");
+  if (si) si.addEventListener("input", (e) => renderCards(e.target.value));
+  
+  const micBtn = document.getElementById("micBtn");
+  if (micBtn && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "ar-SA";
+    recognition.onresult = (e) => {
+      const t = e.results[0][0].transcript;
+      if (si) { si.value = t; renderCards(t); }
+    };
+    micBtn.onclick = () => recognition.start();
+  }
+  
+  const clearBtn = document.getElementById("clearDataBtn");
+  if (clearBtn) clearBtn.onclick = clearStoredData;
+});
 </script>
 </body>
 </html>
